@@ -5,14 +5,12 @@ import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 import LogUtil from "./LogUtil.ts";
 
 type IpsType = {
-  host_list: string[];
+  [s: string]: number;
 };
 
 class IpsUtil {
   // class variables
-  static DefaultIps: IpsType = {
-    host_list: [],
-  };
+  static DefaultIps: IpsType = {};
 
   static rootPath = "";
 
@@ -82,7 +80,7 @@ class IpsUtil {
       //   tempConfig.offset_count = offsetCount;
       // }
 
-      const newIps: IpsType = [];
+      const newIps: IpsType = {};
 
       // const newConfig = { ...config, ...tempConfig };
       const newIpsText = Hjson.stringify(newIps);

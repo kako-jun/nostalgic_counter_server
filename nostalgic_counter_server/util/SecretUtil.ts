@@ -82,7 +82,7 @@ class SecretUtil {
       //   tempConfig.offset_count = offsetCount;
       // }
 
-      const newSecret = { ...config, ...tempConfig };
+      const newSecret: SecretType = { ciphered_password: "" };
       const newSecretText = Hjson.stringify(newSecret);
 
       try {

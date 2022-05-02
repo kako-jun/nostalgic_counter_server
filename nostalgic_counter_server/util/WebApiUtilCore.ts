@@ -7,7 +7,9 @@ import {
 import App from "../app.ts";
 import LogUtil from "./LogUtil.ts";
 import ConfigUtil from "./ConfigUtil.ts";
+import SecretUtil from "./SecretUtil.ts";
 import CounterUtil from "./CounterUtil.ts";
+import IpsUtil from "./IpsUtil.ts";
 import IgnoreListUtil from "./IgnoreListUtil.ts";
 
 type Res = {
@@ -48,8 +50,12 @@ class WebApiUtilCore {
       if (ConfigUtil.create(id, password)) {
         const config = ConfigUtil.load(id);
 
-        if (CounterUtil.create(id)) {
-          res = { errCode: 0, data: config };
+        if (SecretUtil.create(id, password)) {
+          if (CounterUtil.create(id)) {
+            if (IpsUtil.create(id)) {
+              res = { errCode: 0, data: config };
+            }
+          }
         }
       } else {
         res = { errCode: -1, data: `ID: ${id} already exists.` };

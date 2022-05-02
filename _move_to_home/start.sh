@@ -1,0 +1,1 @@
+sudo systemctl restart nostalgic_counter_server

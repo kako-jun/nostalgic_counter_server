@@ -1,0 +1,8 @@
+services:
+  app:
+    build: ./nostalgic_counter_server
+    volumes:
+      - ../nostalgic_counter_server:/app
+    ports:
+      - "20222:20222"
+    restart: always

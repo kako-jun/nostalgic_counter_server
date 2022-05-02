@@ -117,18 +117,19 @@ class WebApiUtilCore {
   static get_admin_reset(context: any) {
     LogUtil.debug("get_admin_reset");
     let res: Res = { errCode: -1, data: null };
+    const query = helpers.getQuery(context, { mergeParams: true });
 
     if (IgnoreListUtil.isIgnoreHost(context.host)) {
       // do nothing.
     } else {
       let id = "default";
-      if ("id" in context.params) {
-        id = context.params.id;
+      if ("id" in query) {
+        id = query.id;
       }
 
       let password = "";
-      if ("password" in context.params) {
-        password = context.params.password;
+      if ("password" in query) {
+        password = query.password;
       }
 
       if (ConfigUtil.create(id, password)) {

@@ -95,7 +95,6 @@ class IpsUtil {
       }
     }
 
-    // const newIps = { ...ips, [host]: now.toZonedTime("UTC").toISO() };
     const newIps = { ...ips, [host]: now.toISO() };
     IpsUtil.save(id, newIps);
     return true;

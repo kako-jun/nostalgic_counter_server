@@ -149,10 +149,12 @@ class WebApiUtilCore {
         if ((await SecretUtil.isPasswordCorrect(id, password)) === false) {
           res = { errCode: -1, data: "Wrong ID or password." };
         } else {
-          if (ConfigUtil.create(id)) {
-            const config = ConfigUtil.load(id);
-            if (config) {
-              res = { errCode: 0, data: config };
+          if (CounterUtil.create(id)) {
+            if (IpsUtil.create(id)) {
+              const config = ConfigUtil.load(id);
+              if (config) {
+                res = { errCode: 0, data: config };
+              }
             }
           }
         }

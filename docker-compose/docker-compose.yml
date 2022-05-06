@@ -3,7 +3,7 @@ services:
     build: ./nostalgic_counter_server
     volumes:
       - ../nostalgic_counter_server:/app
-      - ./nostalgic_counter_server/.nostalgic_counter_server:/root/.nostalgic_counter_server
+      - ~/.nostalgic_counter_server:/root/.nostalgic_counter_server
 
     # COPY ./.nostalgic_counter_server /root/.nostalgic_counter_server
     ports:

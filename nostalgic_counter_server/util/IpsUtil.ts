@@ -1,11 +1,11 @@
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
+import { datetime, diffInMin } from "https://deno.land/x/ptera/mod.ts";
 import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
 
 type IpsType = {
-  [s: string]: number;
+  [s: string]: string;
 };
 
 class IpsUtil {
@@ -64,37 +64,41 @@ class IpsUtil {
     return null;
   }
 
-  static save(id: string, intervalMinutes: number, offsetCount: number) {
-    const ips = IpsUtil.load(id);
-    if (ips) {
-      const ipsPath = `${IpsUtil.rootPath}/ids/${id}/ips.hjson`;
-      LogUtil.debug("ipsPath", ipsPath);
+  static save(id: string, ips: IpsType) {
+    const ipsPath = `${IpsUtil.rootPath}/ids/${id}/ips.hjson`;
+    LogUtil.debug("ipsPath", ipsPath);
 
-      // const tempConfig: any = {};
+    const ipsText = Hjson.stringify(ips);
 
-      // if (intervalMinutes >= 0) {
-      //   tempConfig.interval_minutes = intervalMinutes;
-      // }
+    try {
+      Deno.writeTextFileSync(ipsPath, ipsText);
 
-      // if (offsetCount >= 0) {
-      //   tempConfig.offset_count = offsetCount;
-      // }
-
-      const newIps: IpsType = {};
-
-      // const newConfig = { ...config, ...tempConfig };
-      const newIpsText = Hjson.stringify(newIps);
-
-      try {
-        Deno.writeTextFileSync(ipsPath, newIpsText);
-
-        return true;
-      } catch (e) {
-        LogUtil.error(e.message);
-      }
+      return true;
+    } catch (e) {
+      LogUtil.error(e.message);
     }
 
     return false;
+  }
+
+  static isIntervalOk(id: string, host: string, intervalMinutes: number) {
+    const now = datetime();
+
+    const ips = IpsUtil.load(id);
+    if (ips) {
+      if (host in ips) {
+        const preDt = datetime(new Date(ips[host]));
+        const diff = diffInMin(now, preDt);
+        if (diff < intervalMinutes) {
+          return false;
+        }
+      }
+    }
+
+    // const newIps = { ...ips, [host]: now.toZonedTime("UTC").toISO() };
+    const newIps = { ...ips, [host]: now.toISO() };
+    IpsUtil.save(id, newIps);
+    return true;
   }
 }
 

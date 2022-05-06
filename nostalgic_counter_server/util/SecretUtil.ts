@@ -1,9 +1,9 @@
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
 import CommonUtil from "./CommonUtil.ts";
+import SettingUtil from "./SettingUtil.ts";
 
 type SecretType = {
   ciphered_password: string;
@@ -37,8 +37,10 @@ class SecretUtil {
     const secretPath = `${SecretUtil.rootPath}/ids/${id}/secret.hjson`;
     LogUtil.debug("secretPath", secretPath);
 
-    const cipheredPassword = await CommonUtil.encrypt(password);
-    const pass = await CommonUtil.decrypt(cipheredPassword);
+    const cipheredPassword = await CommonUtil.encrypt(
+      password,
+      SettingUtil.setting.master_password
+    );
 
     const newSecret = {
       ...SecretUtil.DefaultSecret,
@@ -57,7 +59,7 @@ class SecretUtil {
     return false;
   }
 
-  static load(id: string) {
+  static async load(id: string) {
     const secretPath = `${SecretUtil.rootPath}/ids/${id}/secret.hjson`;
     LogUtil.debug("secretPath", secretPath);
 
@@ -66,7 +68,11 @@ class SecretUtil {
       const secret: SecretType = Hjson.parse(secretText);
       LogUtil.debug("secret", secret);
 
-      return secret;
+      const password = await CommonUtil.decrypt(
+        secret.ciphered_password,
+        SettingUtil.setting.master_password
+      );
+      return password;
     } catch (e) {
       LogUtil.error(e.message);
     }
@@ -74,32 +80,36 @@ class SecretUtil {
     return null;
   }
 
-  static save(id: string, password: string) {
-    const secret = SecretUtil.load(id);
-    if (secret) {
-      const secretPath = `${SecretUtil.rootPath}/ids/${id}/secret.hjson`;
-      LogUtil.debug("secretPath", secretPath);
+  static async save(id: string, password: string) {
+    const secretPath = `${SecretUtil.rootPath}/ids/${id}/secret.hjson`;
+    LogUtil.debug("secretPath", secretPath);
 
-      // const tempConfig: any = {};
+    const cipheredPassword = await CommonUtil.encrypt(
+      password,
+      SettingUtil.setting.master_password
+    );
 
-      // if (intervalMinutes >= 0) {
-      //   tempConfig.interval_minutes = intervalMinutes;
-      // }
+    const newSecret = {
+      ...SecretUtil.DefaultSecret,
+      ciphered_password: cipheredPassword,
+    };
+    const newSecretText = Hjson.stringify(newSecret);
 
-      // if (offsetCount >= 0) {
-      //   tempConfig.offset_count = offsetCount;
-      // }
+    try {
+      Deno.writeTextFileSync(secretPath, newSecretText);
 
-      const newSecret: SecretType = { ciphered_password: "" };
-      const newSecretText = Hjson.stringify(newSecret);
+      return true;
+    } catch (e) {
+      LogUtil.error(e.message);
+    }
 
-      try {
-        Deno.writeTextFileSync(secretPath, newSecretText);
+    return false;
+  }
 
-        return true;
-      } catch (e) {
-        LogUtil.error(e.message);
-      }
+  static async isPasswordCorrect(id: string, password: string) {
+    const savedPassword = await SecretUtil.load(id);
+    if (savedPassword === password) {
+      return true;
     }
 
     return false;

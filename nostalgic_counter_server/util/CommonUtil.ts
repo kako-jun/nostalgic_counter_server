@@ -4,21 +4,39 @@ import LogUtil from "./LogUtil.ts";
 
 class CommonUtil {
   // class methods
-  static encrypt = async (text: string) => {
-    const aes = new AES("Hello World AES!", {
+  static async exists(path: string) {
+    try {
+      await Deno.stat(path);
+      return true;
+    } catch (e) {
+      // do nothing.
+    }
+
+    return false;
+  }
+
+  static async idDirExists(rootPath: string, id: string) {
+    const idDirPath = `${rootPath}/ids/${id}`;
+    if (await CommonUtil.exists(idDirPath)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  static async encrypt(text: string, master_password: string) {
+    const aes = new AES(master_password, {
       mode: "cbc",
       iv: "random 16byte iv",
     });
 
     const cipher = await aes.encrypt(text);
     const encryptedText = cipher.hex();
-    console.debug(encryptedText);
-
     return encryptedText;
-  };
+  }
 
-  static decrypt = async (cipheredText: string) => {
-    const aes = new AES("Hello World AES!", {
+  static async decrypt(cipheredText: string, master_password: string) {
+    const aes = new AES(master_password, {
       mode: "cbc",
       iv: "random 16byte iv",
     });
@@ -31,11 +49,9 @@ class CommonUtil {
       });
     }
 
-    // const cipher = new TextEncoder().encode(cipheredText);
     const password = await aes.decrypt(Uint8Array.from(cipheredTextArray));
-    console.log(password.toString());
     return password.toString();
-  };
+  }
 }
 
 export default CommonUtil;

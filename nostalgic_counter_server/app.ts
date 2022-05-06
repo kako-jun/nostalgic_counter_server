@@ -17,13 +17,13 @@ class App {
     LogUtil.info("App start");
     LogUtil.info("version", App.Version);
 
-    SettingUtil.setup();
+    await SettingUtil.setup();
     SettingUtil.load();
     ConfigUtil.setup();
     SecretUtil.setup();
     CounterUtil.setup();
     IpsUtil.setup();
-    IgnoreListUtil.setup();
+    await IgnoreListUtil.setup();
     await WebApiUtil.start();
   }
 }

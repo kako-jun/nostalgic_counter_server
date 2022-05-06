@@ -1,8 +1,8 @@
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
+import CommonUtil from "./CommonUtil.ts";
 
 type IgnoreListType = {
   host_list: string[];
@@ -19,7 +19,7 @@ class IgnoreListUtil {
   static rootPath = "";
 
   // class methods
-  static setup() {
+  static async setup() {
     let home =
       Deno.env.get("HOME") ||
       `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
@@ -32,7 +32,7 @@ class IgnoreListUtil {
 
     // ignore_list.hjsonがなければ作る
     const ignoreListPath = `${IgnoreListUtil.rootPath}/ignore_list.hjson`;
-    if (existsSync(ignoreListPath) === false) {
+    if ((await CommonUtil.exists(ignoreListPath)) === false) {
       IgnoreListUtil.create();
     }
   }

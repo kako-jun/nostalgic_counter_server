@@ -6,6 +6,7 @@ import {
 
 import App from "../app.ts";
 import LogUtil from "./LogUtil.ts";
+import CommonUtil from "./CommonUtil.ts";
 import ConfigUtil from "./ConfigUtil.ts";
 import SecretUtil from "./SecretUtil.ts";
 import CounterUtil from "./CounterUtil.ts";
@@ -34,7 +35,8 @@ class WebApiUtilCore {
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    if (IgnoreListUtil.isIgnoreHost(context.request.headers.get("host"))) {
+    const host = context.request.headers.get("X-Forwarded-For");
+    if (IgnoreListUtil.isIgnoreHost(host)) {
       // do nothing.
     } else {
       let id = "default";
@@ -47,18 +49,21 @@ class WebApiUtilCore {
         password = query.password;
       }
 
-      if (ConfigUtil.create(id, password)) {
-        const config = ConfigUtil.load(id);
-
+      if (await CommonUtil.idDirExists(SecretUtil.rootPath, id)) {
+        res = { errCode: -1, data: `ID: ${id} already exists.` };
+      } else {
         if (await SecretUtil.create(id, password)) {
-          if (CounterUtil.create(id)) {
-            if (IpsUtil.create(id)) {
-              res = { errCode: 0, data: config };
+          if (ConfigUtil.create(id)) {
+            if (CounterUtil.create(id)) {
+              if (IpsUtil.create(id)) {
+                const config = ConfigUtil.load(id);
+                if (config) {
+                  res = { errCode: 0, data: config };
+                }
+              }
             }
           }
         }
-      } else {
-        res = { errCode: -1, data: `ID: ${id} already exists.` };
       }
     }
 
@@ -68,12 +73,13 @@ class WebApiUtilCore {
 
   // GET /admin/config
   // deno-lint-ignore no-explicit-any
-  static get_admin_config(context: any) {
+  static async get_admin_config(context: any) {
     LogUtil.debug("get_admin_config");
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    if (IgnoreListUtil.isIgnoreHost(context.request.headers.get("host"))) {
+    const host = context.request.headers.get("X-Forwarded-For");
+    if (IgnoreListUtil.isIgnoreHost(host)) {
       // do nothing.
     } else {
       let id = "default";
@@ -96,20 +102,18 @@ class WebApiUtilCore {
         offsetCount = Number(query.offset_count);
       }
 
-      // if (!this.exist(path.resolve(this.rootPath, "json", id))) {
-      //   res.send({ error: "ID '" + id + "' not found." });
-      //   return;
-      // }
-
-      // if (!this.isPasswordCorrect(id, password)) {
-      //   res.send({ error: "Wrong ID or password." });
-      //   return;
-      // }
-
-      if (ConfigUtil.save(id, intervalMinutes, offsetCount)) {
-        const newConfig = ConfigUtil.load(id);
-        if (newConfig) {
-          res = { errCode: 0, data: newConfig };
+      if ((await CommonUtil.idDirExists(SecretUtil.rootPath, id)) === false) {
+        res = { errCode: -1, data: `ID: ${id} not found.` };
+      } else {
+        if ((await SecretUtil.isPasswordCorrect(id, password)) === false) {
+          res = { errCode: -1, data: "Wrong ID or password." };
+        } else {
+          if (ConfigUtil.save(id, intervalMinutes, offsetCount)) {
+            const newConfig = ConfigUtil.load(id);
+            if (newConfig) {
+              res = { errCode: 0, data: newConfig };
+            }
+          }
         }
       }
     }
@@ -120,12 +124,13 @@ class WebApiUtilCore {
 
   // GET /admin/reset
   // deno-lint-ignore no-explicit-any
-  static get_admin_reset(context: any) {
+  static async get_admin_reset(context: any) {
     LogUtil.debug("get_admin_reset");
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    if (IgnoreListUtil.isIgnoreHost(context.host)) {
+    const host = context.request.headers.get("X-Forwarded-For");
+    if (IgnoreListUtil.isIgnoreHost(host)) {
       // do nothing.
     } else {
       let id = "default";
@@ -138,11 +143,19 @@ class WebApiUtilCore {
         password = query.password;
       }
 
-      if (ConfigUtil.create(id, password)) {
-        const config = ConfigUtil.load(id);
-        res = { errCode: 0, data: config };
+      if ((await CommonUtil.idDirExists(SecretUtil.rootPath, id)) === false) {
+        res = { errCode: -1, data: `ID: ${id} not found.` };
       } else {
-        res = { errCode: -1, data: `ID: ${id} already exists.` };
+        if ((await SecretUtil.isPasswordCorrect(id, password)) === false) {
+          res = { errCode: -1, data: "Wrong ID or password." };
+        } else {
+          if (ConfigUtil.create(id)) {
+            const config = ConfigUtil.load(id);
+            if (config) {
+              res = { errCode: 0, data: config };
+            }
+          }
+        }
       }
     }
 
@@ -152,12 +165,13 @@ class WebApiUtilCore {
 
   // GET /counter
   // deno-lint-ignore no-explicit-any
-  static get_counter(context: any) {
+  static async get_counter(context: any) {
     LogUtil.debug("get_counter");
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    if (IgnoreListUtil.isIgnoreHost(context.host)) {
+    const host = context.request.headers.get("X-Forwarded-For");
+    if (IgnoreListUtil.isIgnoreHost(host)) {
       // do nothing.
     } else {
       let id = "default";
@@ -170,14 +184,28 @@ class WebApiUtilCore {
         ex = true;
       }
 
-      // if (!this.exist(path.resolve(this.rootPath, "json", id))) {
-      //   res.send({ error: "ID '" + id + "' not found." });
-      //   return;
-      // }
+      if ((await CommonUtil.idDirExists(SecretUtil.rootPath, id)) === false) {
+        res = { errCode: -1, data: `ID: ${id} not found.` };
+      } else {
+        const config = ConfigUtil.load(id);
+        if (config) {
+          if (IpsUtil.isIntervalOk(id, host, config.interval_minutes)) {
+            if (CounterUtil.increment(id)) {
+              // do nothing.
+            }
+          }
 
-      if (CounterUtil.increment(id)) {
-        const counter = CounterUtil.load(id);
-        res = { errCode: 0, data: counter };
+          const counter = CounterUtil.load(id);
+          if (counter) {
+            counter.total += config.offset_count;
+
+            if (ex) {
+              res = { errCode: 0, data: counter };
+            } else {
+              res = { errCode: 0, data: { total: counter.total } };
+            }
+          }
+        }
       }
     }
 

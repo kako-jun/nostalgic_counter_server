@@ -1,12 +1,13 @@
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
 import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
+import CommonUtil from "./CommonUtil.ts";
 
 type SettingType = {
   host_name: string;
   port: number;
+  master_password: string;
 };
 
 class SettingUtil {
@@ -14,13 +15,14 @@ class SettingUtil {
   static DefaultSetting: SettingType = {
     host_name: "localhost",
     port: 20222,
+    master_password: "",
   };
 
   static rootPath = "";
   static setting: SettingType;
 
   // class methods
-  static setup() {
+  static async setup() {
     let home =
       Deno.env.get("HOME") ||
       `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
@@ -33,7 +35,7 @@ class SettingUtil {
 
     // setting.hjsonがなければ作る
     const settingPath = `${SettingUtil.rootPath}/setting.hjson`;
-    if (existsSync(settingPath) === false) {
+    if ((await CommonUtil.exists(settingPath)) === false) {
       SettingUtil.create();
     }
   }
@@ -66,7 +68,7 @@ class SettingUtil {
       const setting: SettingType = Hjson.parse(settingText);
       LogUtil.debug("setting", setting);
 
-      SettingUtil.setting = setting;
+      SettingUtil.setting = { ...SettingUtil.DefaultSetting, ...setting };
     } catch (e) {
       LogUtil.error(e.message);
     }

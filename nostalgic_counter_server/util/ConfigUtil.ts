@@ -30,7 +30,7 @@ class ConfigUtil {
     LogUtil.debug("rootPath", ConfigUtil.rootPath);
   }
 
-  static create(id: string, password: string) {
+  static create(id: string) {
     const idDirPath = `${ConfigUtil.rootPath}/ids/${id}`;
     ensureDirSync(idDirPath);
 
@@ -59,7 +59,7 @@ class ConfigUtil {
       const config: ConfigType = Hjson.parse(configText);
       LogUtil.debug("config", config);
 
-      return config;
+      return { ...ConfigUtil.DefaultConfig, ...config };
     } catch (e) {
       LogUtil.error(e.message);
     }

@@ -3,6 +3,7 @@ import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
+import CommonUtil from "./CommonUtil.ts";
 
 type SecretType = {
   ciphered_password: string;
@@ -29,14 +30,20 @@ class SecretUtil {
     LogUtil.debug("rootPath", SecretUtil.rootPath);
   }
 
-  static create(id: string, password: string) {
+  static async create(id: string, password: string) {
     const idDirPath = `${SecretUtil.rootPath}/ids/${id}`;
     ensureDirSync(idDirPath);
 
     const secretPath = `${SecretUtil.rootPath}/ids/${id}/secret.hjson`;
     LogUtil.debug("secretPath", secretPath);
 
-    const newSecretText = Hjson.stringify(SecretUtil.DefaultSecret);
+    const cipheredPassword = await CommonUtil.encrypt(password);
+
+    const newSecret = {
+      ...SecretUtil.DefaultSecret,
+      ciphered_password: cipheredPassword,
+    };
+    const newSecretText = Hjson.stringify(newSecret);
 
     try {
       Deno.writeTextFileSync(secretPath, newSecretText);
@@ -66,7 +73,7 @@ class SecretUtil {
     return null;
   }
 
-  static save(id: string, intervalMinutes: number, offsetCount: number) {
+  static save(id: string, password: string) {
     const secret = SecretUtil.load(id);
     if (secret) {
       const secretPath = `${SecretUtil.rootPath}/ids/${id}/secret.hjson`;

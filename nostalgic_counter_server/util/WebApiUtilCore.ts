@@ -29,7 +29,7 @@ class WebApiUtilCore {
 
   // GET /admin/new
   // deno-lint-ignore no-explicit-any
-  static get_admin_new(context: any) {
+  static async get_admin_new(context: any) {
     LogUtil.debug("get_admin_new");
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
@@ -50,7 +50,7 @@ class WebApiUtilCore {
       if (ConfigUtil.create(id, password)) {
         const config = ConfigUtil.load(id);
 
-        if (SecretUtil.create(id, password)) {
+        if (await SecretUtil.create(id, password)) {
           if (CounterUtil.create(id)) {
             if (IpsUtil.create(id)) {
               res = { errCode: 0, data: config };

@@ -38,6 +38,7 @@ class SecretUtil {
     LogUtil.debug("secretPath", secretPath);
 
     const cipheredPassword = await CommonUtil.encrypt(password);
+    const pass = await CommonUtil.decrypt(cipheredPassword);
 
     const newSecret = {
       ...SecretUtil.DefaultSecret,

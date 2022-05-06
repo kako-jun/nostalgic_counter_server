@@ -21,7 +21,7 @@ RUN apt-get -qq -y purge \
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH="$DENO_INSTALL/bin:$PATH"
 
-COPY ./.nostalgic_counter_server /root/.nostalgic_counter_server
+# COPY ./.nostalgic_counter_server /root/.nostalgic_counter_server
 
 EXPOSE 20222
 ENTRYPOINT ["deno", "run", "--allow-all", "--unstable", "./main.ts"]

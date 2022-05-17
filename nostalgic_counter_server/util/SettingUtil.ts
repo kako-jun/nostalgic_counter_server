@@ -13,8 +13,8 @@ type SettingType = {
 class SettingUtil {
   // class variables
   static DefaultSetting: SettingType = {
-    host_name: "localhost",
-    port: 20222,
+    host_name: Deno.env.get("HOST") || "localhost",
+    port: Number(Deno.env.get("PORT")) || 8080,
     master_password: "",
   };
 

@@ -1,5 +1,5 @@
 {
-  "host_name": "localhost",
-  "port": 20222,
+  "host_name": "0.0.0.0",
+  "port": 8080,
   "master_password": "16 characters !!"
 }

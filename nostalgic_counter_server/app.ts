@@ -1,5 +1,6 @@
 import LogUtil from "./util/LogUtil.ts";
 import SettingUtil from "./util/SettingUtil.ts";
+import StorageUtil from "./util/StorageUtil.ts";
 import ConfigUtil from "./util/ConfigUtil.ts";
 import SecretUtil from "./util/SecretUtil.ts";
 import CounterUtil from "./util/CounterUtil.ts";
@@ -17,8 +18,11 @@ class App {
     LogUtil.info("App start");
     LogUtil.info("version", App.Version);
 
-    await SettingUtil.setup();
+    SettingUtil.setup();
     SettingUtil.load();
+
+    await StorageUtil.setup();
+
     ConfigUtil.setup();
     SecretUtil.setup();
     CounterUtil.setup();

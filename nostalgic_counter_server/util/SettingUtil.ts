@@ -1,5 +1,6 @@
 import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
+import { parse, stringify } from "https://deno.land/std/encoding/yaml.ts";
 
 import LogUtil from "./LogUtil.ts";
 import CommonUtil from "./CommonUtil.ts";
@@ -22,7 +23,7 @@ class SettingUtil {
   static setting: SettingType;
 
   // class methods
-  static async setup() {
+  static setup() {
     let home =
       Deno.env.get("HOME") ||
       `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
@@ -32,31 +33,6 @@ class SettingUtil {
 
     SettingUtil.rootPath = `${home}/.nostalgic_counter_server`;
     LogUtil.debug("rootPath", SettingUtil.rootPath);
-
-    // setting.hjsonがなければ作る
-    const settingPath = `${SettingUtil.rootPath}/setting.hjson`;
-    if ((await CommonUtil.exists(settingPath)) === false) {
-      SettingUtil.create();
-    }
-  }
-
-  static create() {
-    ensureDirSync(SettingUtil.rootPath);
-
-    const settingPath = `${SettingUtil.rootPath}/setting.hjson`;
-    LogUtil.debug("settingPath", settingPath);
-
-    const newSettingText = Hjson.stringify(SettingUtil.DefaultSetting);
-
-    try {
-      Deno.writeTextFileSync(settingPath, newSettingText);
-
-      return true;
-    } catch (e) {
-      LogUtil.error(e.message);
-    }
-
-    return false;
   }
 
   static load() {

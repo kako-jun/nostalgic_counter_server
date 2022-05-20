@@ -1,17 +1,14 @@
-import {
-  RouterContext,
-  RouteParams,
-  helpers,
-} from "https://deno.land/x/oak/mod.ts";
+import { RouterContext, RouteParams, helpers } from "https://deno.land/x/oak/mod.ts";
 
 import App from "../app.ts";
 import LogUtil from "./LogUtil.ts";
 import CommonUtil from "./CommonUtil.ts";
-import ConfigUtil from "./ConfigUtil.ts";
+import StorageUtil from "./StorageUtil.ts";
 import SecretUtil from "./SecretUtil.ts";
+import ConfigUtil from "./ConfigUtil.ts";
 import CounterUtil from "./CounterUtil.ts";
 import IpsUtil from "./IpsUtil.ts";
-import IgnoreListUtil from "./IgnoreListUtil.ts";
+import IgnoresUtil from "./IgnoresUtil.ts";
 
 type Res = {
   errCode: number;
@@ -35,8 +32,8 @@ class WebApiUtilCore {
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    const host = context.request.headers.get("X-Forwarded-For");
-    if (IgnoreListUtil.isIgnoreHost(host)) {
+    const hostName = context.request.headers.get("X-Forwarded-For");
+    if (await IgnoresUtil.isIgnoreHostName(hostName)) {
       // do nothing.
     } else {
       let id = "default";
@@ -49,14 +46,14 @@ class WebApiUtilCore {
         password = query.password;
       }
 
-      if (await CommonUtil.idDirExists(SecretUtil.rootPath, id)) {
+      if (await StorageUtil.idExists(id)) {
         res = { errCode: -1, data: `ID: ${id} already exists.` };
       } else {
         if (await SecretUtil.create(id, password)) {
-          if (ConfigUtil.create(id)) {
-            if (CounterUtil.create(id)) {
-              if (IpsUtil.create(id)) {
-                const config = ConfigUtil.load(id);
+          if (await ConfigUtil.create(id)) {
+            if (await CounterUtil.create(id)) {
+              if (await IpsUtil.create(id)) {
+                const config = await ConfigUtil.load(id);
                 if (config) {
                   res = { errCode: 0, data: config };
                 }
@@ -78,8 +75,8 @@ class WebApiUtilCore {
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    const host = context.request.headers.get("X-Forwarded-For");
-    if (IgnoreListUtil.isIgnoreHost(host)) {
+    const hostName = context.request.headers.get("X-Forwarded-For");
+    if (await IgnoresUtil.isIgnoreHostName(hostName)) {
       // do nothing.
     } else {
       let id = "default";
@@ -102,14 +99,14 @@ class WebApiUtilCore {
         offsetCount = Number(query.offset_count);
       }
 
-      if ((await CommonUtil.idDirExists(SecretUtil.rootPath, id)) === false) {
+      if ((await StorageUtil.idExists(id)) === false) {
         res = { errCode: -1, data: `ID: ${id} not found.` };
       } else {
         if ((await SecretUtil.isPasswordCorrect(id, password)) === false) {
           res = { errCode: -1, data: "Wrong ID or password." };
         } else {
-          if (ConfigUtil.save(id, intervalMinutes, offsetCount)) {
-            const newConfig = ConfigUtil.load(id);
+          if (await ConfigUtil.save(id, intervalMinutes, offsetCount)) {
+            const newConfig = await ConfigUtil.load(id);
             if (newConfig) {
               res = { errCode: 0, data: newConfig };
             }
@@ -129,8 +126,8 @@ class WebApiUtilCore {
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    const host = context.request.headers.get("X-Forwarded-For");
-    if (IgnoreListUtil.isIgnoreHost(host)) {
+    const hostName = context.request.headers.get("X-Forwarded-For");
+    if (await IgnoresUtil.isIgnoreHostName(hostName)) {
       // do nothing.
     } else {
       let id = "default";
@@ -143,15 +140,15 @@ class WebApiUtilCore {
         password = query.password;
       }
 
-      if ((await CommonUtil.idDirExists(SecretUtil.rootPath, id)) === false) {
+      if ((await StorageUtil.idExists(id)) === false) {
         res = { errCode: -1, data: `ID: ${id} not found.` };
       } else {
         if ((await SecretUtil.isPasswordCorrect(id, password)) === false) {
           res = { errCode: -1, data: "Wrong ID or password." };
         } else {
-          if (CounterUtil.create(id)) {
-            if (IpsUtil.create(id)) {
-              const config = ConfigUtil.load(id);
+          if (await CounterUtil.create(id)) {
+            if (await IpsUtil.create(id)) {
+              const config = await ConfigUtil.load(id);
               if (config) {
                 res = { errCode: 0, data: config };
               }
@@ -172,8 +169,8 @@ class WebApiUtilCore {
     let res: Res = { errCode: -1, data: null };
     const query = helpers.getQuery(context, { mergeParams: true });
 
-    const host = context.request.headers.get("X-Forwarded-For");
-    if (IgnoreListUtil.isIgnoreHost(host)) {
+    const hostName = context.request.headers.get("X-Forwarded-For");
+    if (await IgnoresUtil.isIgnoreHostName(hostName)) {
       // do nothing.
     } else {
       let id = "default";
@@ -186,18 +183,18 @@ class WebApiUtilCore {
         ex = true;
       }
 
-      if ((await CommonUtil.idDirExists(SecretUtil.rootPath, id)) === false) {
+      if ((await StorageUtil.idExists(id)) === false) {
         res = { errCode: -1, data: `ID: ${id} not found.` };
       } else {
-        const config = ConfigUtil.load(id);
+        const config = await ConfigUtil.load(id);
         if (config) {
-          if (IpsUtil.isIntervalOk(id, host, config.interval_minutes)) {
-            if (CounterUtil.increment(id)) {
+          if (await IpsUtil.isIntervalOk(id, hostName, config.interval_minutes)) {
+            if (await CounterUtil.increment(id)) {
               // do nothing.
             }
           }
 
-          const counter = CounterUtil.load(id);
+          const counter = await CounterUtil.load(id);
           if (counter) {
             counter.total += config.offset_count;
 

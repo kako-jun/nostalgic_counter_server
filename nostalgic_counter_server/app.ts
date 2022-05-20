@@ -1,11 +1,7 @@
 import LogUtil from "./util/LogUtil.ts";
 import SettingUtil from "./util/SettingUtil.ts";
 import StorageUtil from "./util/StorageUtil.ts";
-import ConfigUtil from "./util/ConfigUtil.ts";
-import SecretUtil from "./util/SecretUtil.ts";
-import CounterUtil from "./util/CounterUtil.ts";
-import IpsUtil from "./util/IpsUtil.ts";
-import IgnoreListUtil from "./util/IgnoreListUtil.ts";
+import IgnoresUtil from "./util/IgnoresUtil.ts";
 import WebApiUtil from "./util/WebApiUtil.ts";
 
 class App {
@@ -23,11 +19,7 @@ class App {
 
     await StorageUtil.setup();
 
-    ConfigUtil.setup();
-    SecretUtil.setup();
-    CounterUtil.setup();
-    IpsUtil.setup();
-    await IgnoreListUtil.setup();
+    await IgnoresUtil.setup();
 
     WebApiUtil.setup();
     await WebApiUtil.start();

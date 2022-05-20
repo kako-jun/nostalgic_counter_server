@@ -14,7 +14,7 @@ class SettingUtil {
   static DefaultSetting: SettingType = {
     host_name: Deno.env.get("HOST") || "localhost",
     port: Number(Deno.env.get("PORT")) || 80,
-    master_password: Deno.env.get("NOSTALGIC_COUNTER_MASTER_PASSWORD") || "",
+    master_password: Deno.env.get("NOSTALGIC_COUNTER_MASTER_PASS") || "",
   };
 
   static setting: SettingType = SettingUtil.DefaultSetting;

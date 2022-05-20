@@ -1,19 +1,14 @@
-import { Bson, MongoClient, Database, ObjectId } from "https://deno.land/x/mongo/mod.ts";
+import { MongoClient, Database, Collection, Document, Bson, ObjectId } from "https://deno.land/x/mongo/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
-
-type TableType = {
-  ids: IdType[];
-  ignore_list: IgnoreListType;
-};
 
 type IdType = {
   _id: ObjectId;
   id: string;
-  secret: SecretType;
-  config: ConfigType;
-  counter: CounterType;
-  ips: IpsType;
+  secret?: SecretType;
+  config?: ConfigType;
+  counter?: CounterType;
+  ips?: IpsType;
 };
 
 export type SecretType = {
@@ -49,8 +44,8 @@ export type IpsType = {
   [s: string]: string;
 };
 
-export type IgnoreListType = {
-  host_list: string[];
+export type IgnoreType = {
+  hostName: string;
 };
 
 class StorageUtil {
@@ -61,46 +56,36 @@ class StorageUtil {
   };
 
   static db: Database;
+  static ids: Collection<IdType>;
+  static ignores: Collection<IgnoreType>;
 
   // class methods
   static async setup() {
     const client = new MongoClient();
     console.log("client", client);
-    const db = await client.connect(
-      "mongodb+srv://kako-jun:vGUO56jAkijDx5qa@cluster0.vunss.mongodb.net/test?authMechanism=SCRAM-SHA-1&retryWrites=true&w=majority"
+    await client.connect(
+      `mongodb+srv://kako-jun:${Deno.env.get(
+        "NOSTALGIC_COUNTER_SERVER_DB_PASS"
+      )}@cluster0.yckge.mongodb.net/?authMechanism=SCRAM-SHA-1`
     );
 
-    console.log("db", db);
-
-    type UserSchema = {
-      _id: ObjectId;
-      username: string;
-      password: string;
-    };
-
-    // const db = client.database("test");
-    const users = db.collection<UserSchema>("users");
-
-    const insertId = await users.insertOne({
-      username: "user1",
-      password: "pass1",
-    });
-
-    const insertIds = await users.insertMany([
-      {
-        username: "user1",
-        password: "pass1",
-      },
-      {
-        username: "user2",
-        password: "pass2",
-      },
-    ]);
+    StorageUtil.db = client.database("root");
+    StorageUtil.ids = StorageUtil.db.collection<IdType>("ids");
+    StorageUtil.ignores = StorageUtil.db.collection<IgnoreType>("ignores");
   }
 
-  static load(id: string) {}
+  static async idExists(id: string) {
+    try {
+      const idDoc = await StorageUtil.ids.findOne({ id });
+      if (idDoc) {
+        return true;
+      }
+    } catch (e) {
+      LogUtil.error(e.message);
+    }
 
-  static save(id: string, value: any) {}
+    return false;
+  }
 }
 
 export default StorageUtil;

@@ -15,15 +15,6 @@ class CommonUtil {
     return false;
   }
 
-  static async idDirExists(rootPath: string, id: string) {
-    const idDirPath = `${rootPath}/ids/${id}`;
-    if (await CommonUtil.exists(idDirPath)) {
-      return true;
-    }
-
-    return false;
-  }
-
   static async encrypt(text: string, master_password: string) {
     const aes = new AES(master_password, {
       mode: "cbc",

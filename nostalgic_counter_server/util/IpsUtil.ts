@@ -1,44 +1,16 @@
-import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import { datetime, diffInMin } from "https://deno.land/x/ptera/mod.ts";
-import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
-
-type IpsType = {
-  [s: string]: string;
-};
+import StorageUtil, { IpsType } from "./StorageUtil.ts";
 
 class IpsUtil {
   // class variables
   static DefaultIps: IpsType = {};
 
-  static rootPath = "";
-
   // class methods
-  static setup() {
-    let home =
-      Deno.env.get("HOME") ||
-      `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
-    if (home) {
-      home = home.replaceAll("\\", "/");
-    }
-
-    IpsUtil.rootPath = `${home}/.nostalgic_counter_server`;
-    LogUtil.debug("rootPath", IpsUtil.rootPath);
-  }
-
-  static create(id: string) {
-    const idDirPath = `${IpsUtil.rootPath}/ids/${id}`;
-    ensureDirSync(idDirPath);
-
-    const ipsPath = `${IpsUtil.rootPath}/ids/${id}/ips.hjson`;
-    LogUtil.debug("ipsPath", ipsPath);
-
-    const newIpsText = Hjson.stringify(IpsUtil.DefaultIps);
-
+  static async create(id: string) {
     try {
-      Deno.writeTextFileSync(ipsPath, newIpsText);
-
+      await StorageUtil.ids.updateOne({ id }, { $set: { ips: IpsUtil.DefaultIps } }, { upsert: true });
       return true;
     } catch (e) {
       LogUtil.error(e.message);
@@ -47,16 +19,15 @@ class IpsUtil {
     return false;
   }
 
-  static load(id: string) {
-    const ipsPath = `${IpsUtil.rootPath}/ids/${id}/ips.hjson`;
-    LogUtil.debug("ipsPath", ipsPath);
-
+  static async load(id: string) {
     try {
-      const ipsText = Deno.readTextFileSync(ipsPath);
-      const ips: IpsType = Hjson.parse(ipsText);
-      LogUtil.debug("ips", ips);
-
-      return ips;
+      const idDoc = await StorageUtil.ids.findOne({ id });
+      if (idDoc) {
+        const ips = idDoc.ips;
+        if (ips) {
+          return ips;
+        }
+      }
     } catch (e) {
       LogUtil.error(e.message);
     }
@@ -64,15 +35,9 @@ class IpsUtil {
     return null;
   }
 
-  static save(id: string, ips: IpsType) {
-    const ipsPath = `${IpsUtil.rootPath}/ids/${id}/ips.hjson`;
-    LogUtil.debug("ipsPath", ipsPath);
-
-    const ipsText = Hjson.stringify(ips);
-
+  static async save(id: string, ips: IpsType) {
     try {
-      Deno.writeTextFileSync(ipsPath, ipsText);
-
+      await StorageUtil.ids.updateOne({ id }, { $set: { ips } }, { upsert: true });
       return true;
     } catch (e) {
       LogUtil.error(e.message);
@@ -81,13 +46,13 @@ class IpsUtil {
     return false;
   }
 
-  static isIntervalOk(id: string, host: string, intervalMinutes: number) {
+  static async isIntervalOk(id: string, hostName: string, intervalMinutes: number) {
     const now = datetime();
 
-    const ips = IpsUtil.load(id);
+    const ips = await IpsUtil.load(id);
     if (ips) {
-      if (host in ips) {
-        const preDt = datetime(new Date(ips[host]));
+      if (hostName in ips) {
+        const preDt = datetime(new Date(ips[hostName]));
         const diff = diffInMin(now, preDt);
         if (diff < intervalMinutes) {
           return false;
@@ -95,8 +60,8 @@ class IpsUtil {
       }
     }
 
-    const newIps = { ...ips, [host]: now.toISO() };
-    IpsUtil.save(id, newIps);
+    const newIps = { ...ips, [hostName]: now.toISO() };
+    await IpsUtil.save(id, newIps);
     return true;
   }
 }

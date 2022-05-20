@@ -10,6 +10,10 @@ type CounterType = {
   today_date: string;
   yesterday: number;
   yesterday_date: string;
+  this_week: number;
+  this_week_date: string;
+  last_week: number;
+  last_week_date: string;
   this_month: number;
   this_month_date: string;
   last_month: number;
@@ -26,9 +30,7 @@ class CounterUtil {
 
   // class methods
   static setup() {
-    let home =
-      Deno.env.get("HOME") ||
-      `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
+    let home = Deno.env.get("HOME") || `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
     if (home) {
       home = home.replaceAll("\\", "/");
     }
@@ -46,6 +48,7 @@ class CounterUtil {
 
     const now = datetime();
     const yesterday = now.subtract({ day: 1 });
+    const lastWeek = now.subtract({ day: 7 });
     const lastMonth = now.subtract({ month: 1 });
     const lastYear = now.subtract({ year: 1 });
     const DefaultCounter: CounterType = {
@@ -54,6 +57,10 @@ class CounterUtil {
       today_date: now.format("YYYY-MM-dd"),
       yesterday: 0,
       yesterday_date: yesterday.format("YYYY-MM-dd"),
+      this_week: 0,
+      this_week_date: now.format("YYYY-MM-dd"),
+      last_week: 0,
+      last_week_date: lastWeek.format("YYYY-MM-dd"),
       this_month: 0,
       this_month_date: now.format("YYYY-MM"),
       last_month: 0,
@@ -119,6 +126,20 @@ class CounterUtil {
         yesterdayCount = counter.today;
       }
 
+      let thisWeekCount = 0;
+      const thisWeekDate = now.format("YYYY-MM-dd");
+      if (thisWeekDate === counter.this_week_date) {
+        thisWeekCount = counter.this_week + 1;
+      }
+
+      let lastWeekCount = 0;
+      const lastWeekDate = lastMonth.format("YYYY-MM-dd");
+      if (lastWeekDate === counter.last_week_date) {
+        lastWeekCount = counter.last_week;
+      } else if (lastWeekDate === counter.this_week_date) {
+        lastWeekCount = counter.this_week;
+      }
+
       let thisMonthCount = 0;
       const thisMonthDate = now.format("YYYY-MM");
       if (thisMonthDate === counter.this_month_date) {
@@ -153,6 +174,10 @@ class CounterUtil {
         today_date: todayDate,
         yesterday: yesterdayCount,
         yesterday_date: yesterdayDate,
+        this_week: thisWeekCount,
+        this_week_date: thisWeekDate,
+        last_week: lastWeekCount,
+        last_week_date: lastWeekDate,
         this_month: thisMonthCount,
         this_month_date: thisMonthDate,
         last_month: lastMonthCount,

@@ -31,6 +31,10 @@ export type CounterType = {
   today_date: string;
   yesterday: number;
   yesterday_date: string;
+  this_week: number;
+  this_week_date: string;
+  last_week: number;
+  last_week_date: string;
   this_month: number;
   this_month_date: string;
   last_month: number;

@@ -54,12 +54,9 @@ class WebApiUtil {
   }
 
   static async start() {
-    LogUtil.info(
-      "listen",
-      `http://${SettingUtil.setting.host_name}:${SettingUtil.setting.port}`
-    );
+    LogUtil.info("listen", `http://${SettingUtil.setting.host_name}:${SettingUtil.setting.port}`);
 
-    await WebApiUtil.app.listen({
+    await WebApiUtil.app?.listen({
       hostname: SettingUtil.setting.host_name,
       port: SettingUtil.setting.port,
     });

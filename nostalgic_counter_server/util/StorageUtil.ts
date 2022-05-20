@@ -1,10 +1,52 @@
-import { Bson, MongoClient, ObjectId } from "https://deno.land/x/mongo/mod.ts";
+import { Bson, MongoClient, Database, ObjectId } from "https://deno.land/x/mongo/mod.ts";
 
 import LogUtil from "./LogUtil.ts";
 
-type ConfigType = {
+type TableType = {
+  ids: IdType[];
+  ignore_list: IgnoreListType;
+};
+
+type IdType = {
+  _id: ObjectId;
+  id: string;
+  secret: SecretType;
+  config: ConfigType;
+  counter: CounterType;
+  ips: IpsType;
+};
+
+export type SecretType = {
+  ciphered_password: string;
+};
+
+export type ConfigType = {
   interval_minutes: number;
   offset_count: number;
+};
+
+export type CounterType = {
+  total: number;
+  today: number;
+  today_date: string;
+  yesterday: number;
+  yesterday_date: string;
+  this_month: number;
+  this_month_date: string;
+  last_month: number;
+  last_month_date: string;
+  this_year: number;
+  this_year_date: string;
+  last_year: number;
+  last_year_date: string;
+};
+
+export type IpsType = {
+  [s: string]: string;
+};
+
+export type IgnoreListType = {
+  host_list: string[];
 };
 
 class StorageUtil {
@@ -14,17 +56,17 @@ class StorageUtil {
     offset_count: 0,
   };
 
-  static rootPath = "";
+  static db: Database;
 
   // class methods
   static async setup() {
     const client = new MongoClient();
     console.log("client", client);
-    await client.connect(
-      "mongodb+srv://kako-jun:vGUO56jAkijDx5qa@cluster0.vunss.mongodb.net/myFirstDatabase?authMechanism=SCRAM-SHA-1&retryWrites=true&w=majority"
+    const db = await client.connect(
+      "mongodb+srv://kako-jun:vGUO56jAkijDx5qa@cluster0.vunss.mongodb.net/test?authMechanism=SCRAM-SHA-1&retryWrites=true&w=majority"
     );
 
-    console.log("client", client);
+    console.log("db", db);
 
     type UserSchema = {
       _id: ObjectId;
@@ -32,7 +74,7 @@ class StorageUtil {
       password: string;
     };
 
-    const db = client.database("test");
+    // const db = client.database("test");
     const users = db.collection<UserSchema>("users");
 
     const insertId = await users.insertOne({
@@ -51,6 +93,10 @@ class StorageUtil {
       },
     ]);
   }
+
+  static load(id: string) {}
+
+  static save(id: string, value: any) {}
 }
 
 export default StorageUtil;

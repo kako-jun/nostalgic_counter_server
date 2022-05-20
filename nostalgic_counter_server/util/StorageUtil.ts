@@ -18,7 +18,6 @@ class StorageUtil {
 
   // class methods
   static async setup() {
-    console.log("setup");
     const client = new MongoClient();
     console.log("client", client);
     await client.connect(
@@ -27,11 +26,11 @@ class StorageUtil {
 
     console.log("client", client);
 
-    interface UserSchema {
+    type UserSchema = {
       _id: ObjectId;
       username: string;
       password: string;
-    }
+    };
 
     const db = client.database("test");
     const users = db.collection<UserSchema>("users");

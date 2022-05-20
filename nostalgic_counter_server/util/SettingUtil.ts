@@ -1,5 +1,3 @@
-import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
-import * as Hjson from "https://deno.land/x/hjson_deno/mod.ts";
 import { parse, stringify } from "https://deno.land/std/encoding/yaml.ts";
 
 import LogUtil from "./LogUtil.ts";
@@ -15,38 +13,39 @@ class SettingUtil {
   // class variables
   static DefaultSetting: SettingType = {
     host_name: Deno.env.get("HOST") || "localhost",
-    port: Number(Deno.env.get("PORT")) || 8080,
-    master_password: "",
+    port: Number(Deno.env.get("PORT")) || 80,
+    master_password: Deno.env.get("NOSTALGIC_COUNTER_MASTER_PASSWORD") || "",
   };
 
-  static rootPath = "";
-  static setting: SettingType;
+  static setting: SettingType = SettingUtil.DefaultSetting;
+  static settingPath = "";
 
   // class methods
   static setup() {
-    let home =
-      Deno.env.get("HOME") ||
-      `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
+    let home = Deno.env.get("HOME") || `${Deno.env.get("HOMEDRIVE")}${Deno.env.get("HOMEPATH")}`;
     if (home) {
       home = home.replaceAll("\\", "/");
     }
 
-    SettingUtil.rootPath = `${home}/.nostalgic_counter_server`;
-    LogUtil.debug("rootPath", SettingUtil.rootPath);
+    const rootPath = `${home}/.nostalgic_counter_server`;
+    LogUtil.debug("rootPath", rootPath);
+
+    SettingUtil.settingPath = `${rootPath}/setting.yml`;
+    LogUtil.debug("settingPath", SettingUtil.settingPath);
   }
 
-  static load() {
-    const settingPath = `${SettingUtil.rootPath}/setting.hjson`;
-    LogUtil.debug("settingPath", settingPath);
+  static async load() {
+    if (await CommonUtil.exists(SettingUtil.settingPath)) {
+      try {
+        const settingText = Deno.readTextFileSync(SettingUtil.settingPath);
+        const setting = parse(settingText) as SettingType;
+        // パスワードが見えてしまうため、コメントアウト
+        // LogUtil.debug("setting", setting);
 
-    try {
-      const settingText = Deno.readTextFileSync(settingPath);
-      const setting: SettingType = Hjson.parse(settingText);
-      LogUtil.debug("setting", setting);
-
-      SettingUtil.setting = { ...SettingUtil.DefaultSetting, ...setting };
-    } catch (e) {
-      LogUtil.error(e.message);
+        SettingUtil.setting = { ...SettingUtil.DefaultSetting, ...setting };
+      } catch (e) {
+        LogUtil.error(e.message);
+      }
     }
   }
 }

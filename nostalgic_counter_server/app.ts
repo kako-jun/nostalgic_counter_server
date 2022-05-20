@@ -19,7 +19,7 @@ class App {
     LogUtil.info("version", App.Version);
 
     SettingUtil.setup();
-    SettingUtil.load();
+    await SettingUtil.load();
 
     await StorageUtil.setup();
 
@@ -28,6 +28,8 @@ class App {
     CounterUtil.setup();
     IpsUtil.setup();
     await IgnoreListUtil.setup();
+
+    WebApiUtil.setup();
     await WebApiUtil.start();
   }
 }

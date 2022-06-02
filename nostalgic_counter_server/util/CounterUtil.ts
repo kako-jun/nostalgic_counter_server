@@ -10,7 +10,12 @@ class CounterUtil {
   static async create(id: string) {
     const now = datetime();
     const yesterday = now.subtract({ day: 1 });
-    const lastWeek = now.subtract({ day: 7 });
+
+    // 0: 日曜, 1: 月曜, 2: 火曜, 3: 水曜, 4: 木曜, 5: 金曜, 6: 土曜
+    // 直前の日曜を探す（今日が日曜ならば今日）
+    const thisWeek = now.subtract({ day: now.weekDay() });
+    const lastWeek = now.subtract({ day: now.weekDay() + 7 });
+
     const lastMonth = now.subtract({ month: 1 });
     const lastYear = now.subtract({ year: 1 });
     const defaultCounter: CounterType = {
@@ -20,7 +25,7 @@ class CounterUtil {
       yesterday: 0,
       yesterday_date: yesterday.format("YYYY-MM-dd"),
       this_week: 0,
-      this_week_date: now.format("YYYY-MM-dd"),
+      this_week_date: thisWeek.format("YYYY-MM-dd"),
       last_week: 0,
       last_week_date: lastWeek.format("YYYY-MM-dd"),
       this_month: 0,
@@ -66,6 +71,12 @@ class CounterUtil {
       if (counter) {
         const now = datetime();
         const yesterday = now.subtract({ day: 1 });
+
+        // 0: 日曜, 1: 月曜, 2: 火曜, 3: 水曜, 4: 木曜, 5: 金曜, 6: 土曜
+        // 直前の日曜を探す（今日が日曜ならば今日）
+        const thisWeek = now.subtract({ day: now.weekDay() });
+        const lastWeek = now.subtract({ day: now.weekDay() + 7 });
+
         const lastMonth = now.subtract({ month: 1 });
         const lastYear = now.subtract({ year: 1 });
 
@@ -84,13 +95,13 @@ class CounterUtil {
         }
 
         let thisWeekCount = 0;
-        const thisWeekDate = now.format("YYYY-MM-dd");
+        const thisWeekDate = thisWeek.format("YYYY-MM-dd");
         if (thisWeekDate === counter.this_week_date) {
           thisWeekCount = counter.this_week + 1;
         }
 
         let lastWeekCount = 0;
-        const lastWeekDate = lastMonth.format("YYYY-MM-dd");
+        const lastWeekDate = lastWeek.format("YYYY-MM-dd");
         if (lastWeekDate === counter.last_week_date) {
           lastWeekCount = counter.last_week;
         } else if (lastWeekDate === counter.this_week_date) {

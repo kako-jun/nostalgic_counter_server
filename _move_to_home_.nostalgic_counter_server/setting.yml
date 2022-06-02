@@ -1,3 +1,3 @@
-host_name: "localhost"
+host_name: "0.0.0.0"
 port: 80
 master_password: "16 characters !!"

@@ -1,0 +1,6 @@
+{
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "app_development",
+  "workspaceFolder": "/app",
+  "extensions": ["denoland.vscode-deno"]
+}

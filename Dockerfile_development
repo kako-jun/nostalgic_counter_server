@@ -1,0 +1,15 @@
+FROM denoland/deno:alpine
+
+ENV HOST 0.0.0.0
+ENV PORT 8080
+
+#RUN adduser -D myuser
+#USER myuser
+
+# COPY ./nostalgic_counter_server /app
+# COPY ./_move_to_home_.nostalgic_counter_server /root/.nostalgic_counter_server
+
+WORKDIR /app
+
+CMD ["cache", "main.ts"]
+# CMD ["run", "--allow-read", "--allow-write", "--allow-env", "--allow-net", "main.ts"]

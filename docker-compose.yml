@@ -1,11 +1,21 @@
 services:
   app:
-    build: .
-    # volumes:
-      # - ./chacha_server:/app
-      # - ./chacha_server/.chacha_server:/root/.chacha_server
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "80:8080"
-    # stdin_open: true
-    # tty: true
-    # restart: always
+  app_development:
+    build:
+      dockerfile: Dockerfile_development
+      context: .
+    environment:
+      - NOSTALGIC_COUNTER_SERVER_DB_PASS=$NOSTALGIC_COUNTER_SERVER_DB_PASS
+      - NOSTALGIC_COUNTER_MASTER_PASS=$NOSTALGIC_COUNTER_MASTER_PASS
+    volumes:
+      - ./nostalgic_counter_server:/app
+      - ~/.nostalgic_counter_server:/root/.nostalgic_counter_server
+    ports:
+      - "8080:8080"
+    tty: true
+    command: [ "sleep", "infinity" ]

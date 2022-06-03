@@ -24,7 +24,7 @@ class ConfigUtil {
       const idDoc = await StorageUtil.ids.findOne({ id });
       if (idDoc) {
         const config = idDoc.config;
-        LogUtil.debug("config", config);
+        LogUtil.debug({ config });
 
         return { ...ConfigUtil.DefaultConfig, ...config };
       }

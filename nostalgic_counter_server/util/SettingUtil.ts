@@ -28,7 +28,7 @@ class SettingUtil {
     }
 
     const rootPath = `${home}/.nostalgic_counter_server`;
-    LogUtil.debug("rootPath", rootPath);
+    LogUtil.debug({ rootPath });
 
     SettingUtil.settingPath = `${rootPath}/setting.yml`;
     LogUtil.debug("settingPath", SettingUtil.settingPath);
@@ -40,7 +40,7 @@ class SettingUtil {
         const settingText = Deno.readTextFileSync(SettingUtil.settingPath);
         const setting = parse(settingText) as SettingType;
         // パスワードが見えてしまうため、コメントアウト
-        // LogUtil.debug("setting", setting);
+        // LogUtil.debug({setting});
 
         SettingUtil.setting = { ...SettingUtil.DefaultSetting, ...setting };
       } catch (e) {

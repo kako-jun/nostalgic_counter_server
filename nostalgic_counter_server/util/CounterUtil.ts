@@ -54,7 +54,7 @@ class CounterUtil {
       if (idDoc) {
         const counter = idDoc.counter;
         if (counter) {
-          LogUtil.debug("counter", counter);
+          LogUtil.debug({ counter });
           return counter;
         }
       }

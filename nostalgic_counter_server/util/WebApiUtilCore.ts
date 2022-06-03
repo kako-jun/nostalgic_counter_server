@@ -21,7 +21,7 @@ class WebApiUtilCore {
   static get_version(context: any) {
     LogUtil.debug("get_version");
     const res: Res = { errCode: 0, data: App.Version };
-    LogUtil.debug("res", res);
+    LogUtil.debug({ res });
     context.response.body = res;
   }
 
@@ -64,7 +64,7 @@ class WebApiUtilCore {
       }
     }
 
-    LogUtil.debug("res", res);
+    LogUtil.debug({ res });
     context.response.body = res;
   }
 
@@ -115,7 +115,7 @@ class WebApiUtilCore {
       }
     }
 
-    LogUtil.debug("res", res);
+    LogUtil.debug({ res });
     context.response.body = res;
   }
 
@@ -158,7 +158,7 @@ class WebApiUtilCore {
       }
     }
 
-    LogUtil.debug("res", res);
+    LogUtil.debug({ res });
     context.response.body = res;
   }
 
@@ -208,7 +208,7 @@ class WebApiUtilCore {
       }
     }
 
-    LogUtil.debug("res", res);
+    LogUtil.debug({ res });
     context.response.body = res;
   }
 }

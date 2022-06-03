@@ -12,8 +12,8 @@ type SettingType = {
 class SettingUtil {
   // class variables
   static DefaultSetting: SettingType = {
-    host_name: Deno.env.get("HOST") || "localhost",
-    port: Number(Deno.env.get("PORT")) || 80,
+    host_name: Deno.env.get("HOST") || "0.0.0.0",
+    port: Number(Deno.env.get("PORT")) || 8080,
     master_password: Deno.env.get("NOSTALGIC_COUNTER_MASTER_PASS") || "",
   };
 
@@ -39,14 +39,15 @@ class SettingUtil {
       try {
         const settingText = Deno.readTextFileSync(SettingUtil.settingPath);
         const setting = parse(settingText) as SettingType;
-        // パスワードが見えてしまうため、コメントアウト
-        // LogUtil.debug({setting});
 
         SettingUtil.setting = { ...SettingUtil.DefaultSetting, ...setting };
       } catch (e) {
         LogUtil.error(e.message);
       }
     }
+
+    // パスワードが見えてしまうため、コメントアウト
+    // LogUtil.debug("setting", SettingUtil.setting);
   }
 }
 

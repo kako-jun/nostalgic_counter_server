@@ -4,19 +4,32 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - NOSTALGIC_COUNTER_SERVER_DB_PASS=$NOSTALGIC_COUNTER_SERVER_DB_PASS
+      - NOSTALGIC_COUNTER_MASTER_PASS=$NOSTALGIC_COUNTER_MASTER_PASS
     ports:
       - "80:8080"
   app_development:
     build:
       dockerfile: Dockerfile_development
       context: .
+      args:
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - HTTP_PROXY=$HTTP_PROXY
+        - https_proxy=$https_proxy
+        - http_proxy=$http_proxy
     environment:
       - NOSTALGIC_COUNTER_SERVER_DB_PASS=$NOSTALGIC_COUNTER_SERVER_DB_PASS
       - NOSTALGIC_COUNTER_MASTER_PASS=$NOSTALGIC_COUNTER_MASTER_PASS
+      - HTTPS_PROXY=$HTTPS_PROXY
+      - HTTP_PROXY=$HTTP_PROXY
+      - https_proxy=$https_proxy
+      - http_proxy=$http_proxy
     volumes:
       - ./nostalgic_counter_server:/app
       - ~/.nostalgic_counter_server:/root/.nostalgic_counter_server
     ports:
       - "8080:8080"
     tty: true
+    stdin_open: true
     command: [ "sleep", "infinity" ]

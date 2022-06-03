@@ -1,6 +1,7 @@
 {
+  "name": "nostalgic_counter_server",
   "dockerComposeFile": ["../docker-compose.yml"],
   "service": "app_development",
   "workspaceFolder": "/app",
-  "extensions": ["denoland.vscode-deno"]
+  "extensions": ["denoland.vscode-deno", "esbenp.prettier-vscode"]
 }

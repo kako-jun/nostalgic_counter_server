@@ -63,6 +63,7 @@ class StorageUtil {
   static async setup() {
     const client = new MongoClient();
     console.log("client", client);
+    console.log("env", Deno.env.get("NOSTALGIC_COUNTER_SERVER_DB_PASS"));
     await client.connect(
       `mongodb+srv://kako-jun:${Deno.env.get(
         "NOSTALGIC_COUNTER_SERVER_DB_PASS"
